@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		92370079241A955900A8D06E /* GAbases.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92370078241A955900A8D06E /* GAbases.swift */; };
 		A71089B7241A74990091530A /* StreamReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71089B6241A74990091530A /* StreamReader.swift */; };
 		A71089CB241A7F590091530A /* StreamWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71089CA241A7F590091530A /* StreamWriter.swift */; };
 		A72D703D241A715C009639FC /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = A72D703C241A715C009639FC /* main.swift */; };
@@ -25,6 +26,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		92370078241A955900A8D06E /* GAbases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GAbases.swift; sourceTree = "<group>"; };
 		A71089B6241A74990091530A /* StreamReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamReader.swift; sourceTree = "<group>"; };
 		A71089C2241A78260091530A /* InputData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InputData.h; sourceTree = "<group>"; };
 		A71089C3241A78260091530A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -76,6 +78,7 @@
 				A72D703C241A715C009639FC /* main.swift */,
 				A71089B6241A74990091530A /* StreamReader.swift */,
 				A71089CA241A7F590091530A /* StreamWriter.swift */,
+				92370078241A955900A8D06E /* GAbases.swift */,
 			);
 			path = ReplyChallenge;
 			sourceTree = "<group>";
@@ -140,6 +143,7 @@
 			files = (
 				A72D703D241A715C009639FC /* main.swift in Sources */,
 				A71089CB241A7F590091530A /* StreamWriter.swift in Sources */,
+				92370079241A955900A8D06E /* GAbases.swift in Sources */,
 				A71089B7241A74990091530A /* StreamReader.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
