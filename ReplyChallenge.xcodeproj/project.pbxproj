@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0261D4D0241A90CB005E1CC5 /* Person.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0261D4CF241A90CB005E1CC5 /* Person.swift */; };
+		0261D4D2241A9286005E1CC5 /* Office.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0261D4D1241A9286005E1CC5 /* Office.swift */; };
 		A71089B7241A74990091530A /* StreamReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71089B6241A74990091530A /* StreamReader.swift */; };
 		A71089CB241A7F590091530A /* StreamWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71089CA241A7F590091530A /* StreamWriter.swift */; };
 		A72D703D241A715C009639FC /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = A72D703C241A715C009639FC /* main.swift */; };
@@ -25,6 +27,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0261D4CF241A90CB005E1CC5 /* Person.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Person.swift; sourceTree = "<group>"; };
+		0261D4D1241A9286005E1CC5 /* Office.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Office.swift; sourceTree = "<group>"; };
 		A71089B6241A74990091530A /* StreamReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamReader.swift; sourceTree = "<group>"; };
 		A71089C2241A78260091530A /* InputData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InputData.h; sourceTree = "<group>"; };
 		A71089C3241A78260091530A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -74,6 +78,8 @@
 			isa = PBXGroup;
 			children = (
 				A72D703C241A715C009639FC /* main.swift */,
+				0261D4D1241A9286005E1CC5 /* Office.swift */,
+				0261D4CF241A90CB005E1CC5 /* Person.swift */,
 				A71089B6241A74990091530A /* StreamReader.swift */,
 				A71089CA241A7F590091530A /* StreamWriter.swift */,
 			);
@@ -140,6 +146,8 @@
 			files = (
 				A72D703D241A715C009639FC /* main.swift in Sources */,
 				A71089CB241A7F590091530A /* StreamWriter.swift in Sources */,
+				0261D4D2241A9286005E1CC5 /* Office.swift in Sources */,
+				0261D4D0241A90CB005E1CC5 /* Person.swift in Sources */,
 				A71089B7241A74990091530A /* StreamReader.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -264,8 +272,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = PV6ZXMXKDK;
+				DEVELOPMENT_TEAM = BVZY57RJZG;
 				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = "$(SRCROOT)/InputData/Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 			};
@@ -275,8 +284,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = PV6ZXMXKDK;
+				DEVELOPMENT_TEAM = BVZY57RJZG;
 				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = "$(SRCROOT)/InputData/Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 			};

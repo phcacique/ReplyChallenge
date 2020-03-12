@@ -10,10 +10,21 @@ import Foundation
 
 
 // READING FILE
-let pathURL = URL(fileURLWithPath: (NSString(string:"~/Desktop/1_victoria_lake.txt").expandingTildeInPath ))
+let pathURL = URL(fileURLWithPath: (NSString(string:"~/Desktop/Reply Challenge/Inputs/a_solar.txt").expandingTildeInPath ))
 let s = StreamReader(url: pathURL)
+var lineCount = 0
 while let line = s?.nextLine() {
-    print(line)
+    switch lineCount {
+    case 0:
+        let cut = line.split(separator: " ").map(String.init)
+        let width = Int(cut[0])
+        let height = Int(cut[1])
+        
+        break
+    default:
+        break
+    }
+    lineCount += 1
 }
 
 // MAIN CODE
