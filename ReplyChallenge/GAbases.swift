@@ -1,10 +1,10 @@
-//
-//  GAbases.swift
-//  ReplyChallenge
-//
-//  Created by Joaquim Pessoa Filho on 12/03/20.
-//  Copyright © 2020 Pedro Cacique. All rights reserved.
-//
+////
+////  GAbases.swift
+////  ReplyChallenge
+////
+////  Created by Joaquim Pessoa Filho on 12/03/20.
+////  Copyright © 2020 Pedro Cacique. All rights reserved.
+////
 
 import Foundation
 
@@ -14,20 +14,6 @@ enum Position {
     case PM(i:Int)
 }
 
-struct Developer {
-    let company:String
-    let bonus: Int
-    let skills: [String]
-    
-    init(description: String) {
-        let desc = description.split(separator: " ")
-        
-    }
-}
-
-struct PM {
-}
-
 struct Individual {
     let developers:[Developer]
     let pms:[PM]
@@ -35,7 +21,7 @@ struct Individual {
 }
 
 class Population {
-    var individual:[Individual]
+    var individual:[Individual] = []
 }
 
 class GA {
@@ -56,14 +42,8 @@ class GA {
         self.numberOfDevs = 4
     }
     
-    private create initialPopulation() {
-        for i in 0...100 {
-            
-        }
+    private func createInitialPopulation() {
+        
     }
-    
-    
-    
-    
 }
 
