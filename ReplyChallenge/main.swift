@@ -8,6 +8,18 @@
 
 import Foundation
 
+let FILES:[String] = ["a_solar", "b_dream", "c_soup", "d_maelstrom", "e_igloos", "f_glitch"]
+let ACTIVE_FILE:Int = 1
+
+let POP_SIZE = 4
+let NUM_GEN = 2
+let MUT_PROB:Double = 0.02
+let ELI_NUM = 1
+
+let SAVE_FILE = true
+
+
+
 extension CustomStringConvertible{
     var description:String{
         var str = "\(type(of: self)){ "
@@ -22,6 +34,11 @@ extension CustomStringConvertible{
     }
 }
 
+extension Date {
+    func currentTimeMillis() -> Int64 {
+        return Int64(self.timeIntervalSince1970 * 1000)
+    }
+}
 
 protocol Person{
     var id:Int{get set}
@@ -71,11 +88,8 @@ class Cell: CustomStringConvertible{
     }
 }
 
-let files:[String] = ["a_solar", "b_dream", "c_soup", "d_maelstrom", "e_igloos", "f_glitch"]
-let activeFile:Int = 0
-
 // READING FILE
-let pathURL = URL(fileURLWithPath: (NSString(string:"~/Desktop/\(files[activeFile]).txt").expandingTildeInPath ))
+let pathURL = URL(fileURLWithPath: (NSString(string:"~/Desktop/\(FILES[ACTIVE_FILE]).txt").expandingTildeInPath ))
 let s = StreamReader(url: pathURL)
 var lines:[String] = []
 while let line = s?.nextLine() {
@@ -156,6 +170,16 @@ func getCellId(x:Int, y:Int) -> Int{
     return ind
 }
 
+func getCell(by id:Int) -> Cell{
+    let r = Cell(id: -1, pos: (x: 0, y: 0), type: "#")
+    for c in availableCells{
+        if c.id == id {
+            return c
+        }
+    }
+    return r
+}
+
 for i in 0..<availableCells.count{
     availableCells[i].neighbors.append(contentsOf: getNeighbors(c: availableCells[i]))
 }
@@ -196,21 +220,21 @@ for i in cursor..<(cursor+numPMs){
 
 // Printing data
 print("Available cells: \(availableCellsCount)")
-for c in availableCells{
-    print(c)
-}
-print("------------------")
+//for c in availableCells{
+//    print(c)
+//}
+//print("------------------")
 
 print("Developers: \(numDevs)")
-for d in devs{
-    print(d)
-}
-print("------------------")
+//for d in devs{
+//    print(d)
+//}
+//print("------------------")
 
 print("Project Managers: \(numPMs)")
-for p in pms{
-    print(p)
-}
+//for p in pms{
+//    print(p)
+//}
 print("------------------")
 
 
@@ -256,6 +280,7 @@ class Chromossome: CustomStringConvertible{
     }
     
     func calcFitness(){
+        fitness = 0
         for g1 in genes{
             for g2_ind in g1.cell.neighbors{
                 var wp:Int = 0
@@ -268,19 +293,19 @@ class Chromossome: CustomStringConvertible{
                 }
                 let bp:Int = (g1.person.company == g2.person.company) ? g1.person.bonus * g2.person.bonus : 0
                 let tp = wp + bp
+//                print(wp, bp, tp)
                 fitness += tp
             }
         }
     }
     
     func getGeneIndex(by cellId:Int) -> Int{
-        var ind = -1
         for i in 0..<genes.count{
             if genes[i].cell.id == cellId{
                 return i
             }
         }
-        return ind
+        return -1
     }
 }
 
@@ -334,11 +359,6 @@ func mutate(c:Chromossome) -> Chromossome{
     return n
 }
 
-let POP_SIZE = 500
-let NUM_GEN = 50
-let MUT_PROB:Double = 0.1
-let ELI_NUM = 100
-
 func genPopulation(size:Int) -> [Chromossome]{
     var pop:[Chromossome] = []
     for _ in 0..<size{
@@ -380,7 +400,7 @@ for i in 0..<NUM_GEN{
     }
     
     pop = pop.sorted(by: { $0.fitness > $1.fitness })
-    print("BEST FITNESS: \(pop[0].fitness)")
+    print("Generation \(i) BEST FITNESS: \(pop[0].fitness)")
 }
 
 func getDevPos(in chromossome:Chromossome, id:Int) -> (x:Int, y:Int){
@@ -403,26 +423,47 @@ func getPMPos(in chromossome:Chromossome, id:Int) -> (x:Int, y:Int){
     return pos
 }
 
-for g in pop[0].genes{
-    print("\(g.cell.pos) \(g.person)")
-}
+//for g in pop[0].genes{
+//    print("\(g.cell.pos) \(g.person)")
+//}
 
 // SAVING FILE
-let sw = StreamWriter(path: (NSString(string:"~/Desktop/\(files[activeFile])_output.txt").expandingTildeInPath ))
-for d in devs{
-    let p = getDevPos(in: pop[0], id: d.id)
-    if p.x == -1 {
-        sw?.writeLine(data: "X")
-    } else {
-        sw?.writeLine(data: "\(p.x) \(p.y)")
+let finalChromossome:Chromossome = pop[0]
+
+//var genes:[Gene] = []
+//genes.append( Gene(cell: getCell(by: getCellId(x:1, y:1)), person: devs[0]) )
+//genes.append( Gene(cell: getCell(by: getCellId(x:4, y:1)), person: devs[1]) )
+//genes.append( Gene(cell: getCell(by: getCellId(x:3, y:2)), person: devs[4]) )
+//genes.append( Gene(cell: getCell(by: getCellId(x:4, y:2)), person: devs[5]) )
+//genes.append( Gene(cell: getCell(by: getCellId(x:1, y:2)), person: pms[0]) )
+//genes.append( Gene(cell: getCell(by: getCellId(x:2, y:2)), person: pms[2]) )
+//
+//finalChromossome.genes = genes
+//finalChromossome.calcFitness()
+//
+//for c in finalChromossome.genes{
+//    print("\(c.cell.pos)       \(c.cell.neighbors)       \(c.person)")
+//}
+
+print("Final BEST FITNESS: \(finalChromossome.fitness)")
+
+if SAVE_FILE {
+    let sw = StreamWriter(path: (NSString(string:"~/Desktop/output/\(FILES[ACTIVE_FILE])_output_\(finalChromossome.fitness)_\(Date().currentTimeMillis()).txt").expandingTildeInPath ))
+    for d in devs{
+        let p = getDevPos(in: finalChromossome, id: d.id)
+        if p.x == -1 {
+            sw?.writeLine(data: "X")
+        } else {
+            sw?.writeLine(data: "\(p.x) \(p.y)")
+        }
     }
-}
-for d in pms{
-    let p = getPMPos(in: pop[0], id: d.id)
-    if p.x == -1 {
-        sw?.writeLine(data: "X")
-    } else {
-        sw?.writeLine(data: "\(p.x) \(p.y)")
+    for d in pms{
+        let p = getPMPos(in: finalChromossome, id: d.id)
+        if p.x == -1 {
+            sw?.writeLine(data: "X")
+        } else {
+            sw?.writeLine(data: "\(p.x) \(p.y)")
+        }
     }
 }
 
