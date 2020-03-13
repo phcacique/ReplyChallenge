@@ -8,47 +8,71 @@
 
 import Foundation
 
+extension CustomStringConvertible{
+    var description:String{
+        var str = "\(type(of: self)){ "
+        let selfMirror = Mirror(reflecting: self)
+        for child in selfMirror.children{
+            if let propertyName = child.label{
+                str += "\(propertyName): \(child.value); "
+            }
+        }
+        str += "}"
+        return str
+    }
+}
+
+
 protocol Person{
+    var id:Int{get set}
     var company:String{get set}
     var bonus:Int{get set}
 }
 
-struct Developer:Person{
+class Developer:Person, CustomStringConvertible {
+    var id:Int
     var company:String
     var bonus:Int
     var skillsNum:Int
     var skills:[String]
+    
+    init(id:Int, company:String, bonus:Int, skillsNum:Int, skills:[String]) {
+        self.id = id
+        self.company = company
+        self.bonus = bonus
+        self.skillsNum = skillsNum
+        self.skills = skills
+    }
 }
 
-struct PM:Person{
+class PM:Person, CustomStringConvertible {
+    var id:Int
     var company:String
     var bonus:Int
-}
-
-struct Gene{
-    var type:Int
-    var person:Person
-    var score:Int
-}
-
-class Cell{
-    var x:Int
-    var y:Int
-    var type:String
-    var count:Int
-    var neighbors:[Cell] = []
-    var person:Person?
     
-    init(x:Int, y:Int, type:String, count:Int){
-        self.x = x
-        self.y = y
+    init(id:Int, company:String, bonus:Int) {
+        self.id = id
+        self.company = company
+        self.bonus = bonus
+    }
+}
+
+class Cell: CustomStringConvertible{
+    var id:Int
+    var pos:(x:Int, y:Int)
+    var type:String
+    var neighbors:[Int]
+    
+    init(id:Int, pos:(x:Int, y:Int), type:String) {
+        self.id = id
+        self.pos = pos
         self.type = type
-        self.count = count
+        self.neighbors = []
     }
 }
 
 let files:[String] = ["a_solar", "b_dream", "c_soup", "d_maelstrom", "e_igloos", "f_glitch"]
-let activeFile:Int = 1
+let activeFile:Int = 0
 
 // READING FILE
 let pathURL = URL(fileURLWithPath: (NSString(string:"~/Desktop/\(files[activeFile]).txt").expandingTildeInPath ))
@@ -59,8 +83,6 @@ while let line = s?.nextLine() {
     lines.append(line)
 }
 
-//MAIN CODE
-
 // --- PARSING INPUT ---
 // Office size
 var size:(width:Int, height:Int)
@@ -68,307 +90,339 @@ let x = lines[0].split(separator: " ").map(String.init)
 size.width = Int(x[0])!
 size.height = Int(x[1])!
 
-//Available cells and matrix
+// Available cells and matrix
 var availableCellsCount = 0
 var devCount:Int = 0
 var pmCount:Int = 0
 var availableCells:[Cell] = []
 
-var tdc:Int = 0
-var tpc:Int = 0
 for i in 1...size.height{
     let text = lines[i]
     let devChar: Character = "_"
     let pmChar: Character = "M"
     devCount += text.filter { $0 == devChar }.count
     pmCount += text.filter { $0 == pmChar }.count
-    availableCellsCount += devCount
-    availableCellsCount += pmCount
-    
-    //getting neighbours
-    
-    for j in 0..<text.count{
-        let v = String(Array(text)[j])
-        if v=="_"{
-            availableCells.append(Cell(x: j, y: i, type: v , count: tdc ))
-            tdc += 1
-        } else if v=="M"{
-            availableCells.append(Cell(x: j, y: i, type: v , count: tpc ))
-            tpc += 1
+    for j in 0..<Array(lines[i]).count{
+        if Array(lines[i])[j] != "#" {
+            availableCells.append(Cell(id: availableCellsCount, pos: (x:j, y:i-1), type: String(Array(lines[i])[j]) ))
+            availableCellsCount += 1
         }
     }
 }
+availableCellsCount = devCount + pmCount
 
-func getCellIndex(from list:[Cell], x:Int, y:Int) -> Int{
+// Checking neighbors
+func getNeighbors(c: Cell) -> [Int]{
+    var n:[Int] = []
     var ind = -1
-    for i in 0..<list.count{
-        if list[i].x == x && list[i].y == y {
-            ind = i
+    //TOP
+    if c.pos.y>0 {
+        ind = getCellId(x: c.pos.x, y: c.pos.y-1)
+        if ind > -1 && !availableCells[ind].neighbors.contains(c.id){ //!contains to avoid duplicates
+            n.append(ind)
+        }
+    }
+    //BOTTOM
+    if c.pos.y<size.height-1 {
+        ind = getCellId(x: c.pos.x, y: c.pos.y+1)
+        if ind > -1 && !availableCells[ind].neighbors.contains(c.id){ //!contains to avoid duplicates
+            n.append(ind)
+        }
+    }
+    //LEFT
+    if c.pos.x>0 {
+        ind = getCellId(x: c.pos.x-1, y: c.pos.y)
+        if ind > -1 && !availableCells[ind].neighbors.contains(c.id){ //!contains to avoid duplicates
+            n.append(ind)
+        }
+    }
+    //RIGHT
+    if c.pos.x<size.width-1 {
+        ind = getCellId(x: c.pos.x+1, y: c.pos.y)
+        if ind > -1 && !availableCells[ind].neighbors.contains(c.id){ //!contains to avoid duplicates
+            n.append(ind)
+        }
+    }
+    return n
+}
+
+func getCellId(x:Int, y:Int) -> Int{
+    var ind = -1
+    for i in 0..<availableCellsCount{
+        if availableCells[i].pos.x == x && availableCells[i].pos.y == y{
+            ind = availableCells[i].id
         }
     }
     return ind
 }
 
-func getNeighbors(_ c:Cell) -> [Cell]{
-    var n:[Cell] = []
-    var ind = getCellIndex(from: availableCells, x: c.x, y: c.y-1)
-    if c.y > 0 && ind>=0 { //TOP
-        n.append(availableCells[ind])
-    }
-    
-    ind = getCellIndex(from: availableCells, x: c.x, y: c.y+1)
-    if c.y < size.height-1 && ind>=0 { //BOTTOM
-        n.append(availableCells[ind])
-    }
-    
-    ind = getCellIndex(from: availableCells, x: c.x-1, y: c.y)
-    if c.x > 0 && ind>=0 { //left
-        n.append(availableCells[ind])
-    }
-    
-    ind = getCellIndex(from: availableCells, x: c.x+1, y: c.y)
-    if c.x < size.width-1 && ind>=0 { //right
-        n.append(availableCells[ind])
-    }
-    return n
-}
-
 for i in 0..<availableCells.count{
-    var c = availableCells[i]
-    c.neighbors = getNeighbors(c)
+    availableCells[i].neighbors.append(contentsOf: getNeighbors(c: availableCells[i]))
 }
+//after getting neighbors, sort the array by type
+availableCells = availableCells.sorted(by: { $0.type > $1.type })
 
-print("Available cells count: \(availableCellsCount)")
 
-
-//List of developers
+// List of developers
 var cursor:Int = size.height+1
 let numDevs:Int =  Int(lines[cursor])!
-print("Number of developers: \(numDevs)")
 cursor += 1
 
 var devs:[Developer] = []
+var count:Int = 0
 for i in cursor..<(cursor+numDevs){
     let info = lines[i].split(separator: " ").map(String.init)
     var skills:[String] = []
     for j in 3..<info.count{
         skills.append(info[j])
     }
-    devs.append(Developer(company: info[0], bonus: Int(info[1])!, skillsNum: Int(info[2])!, skills: skills))
+    devs.append(Developer(id: count, company: info[0], bonus: Int(info[1])!, skillsNum: Int(info[2])!, skills: skills))
     cursor+=1
+    count+=1
 }
 
-//List of project managers
+// List of project managers
 let numPMs:Int =  Int(lines[cursor])!
-print("Number of project managers: \(numPMs)")
 cursor+=1
 
 var pms:[PM] = []
+count = 0
 for i in cursor..<(cursor+numPMs){
     let info = lines[i].split(separator: " ").map(String.init)
-    pms.append(PM(company: info[0], bonus: Int(info[1])!))
+    pms.append(PM(id:count,company: info[0], bonus: Int(info[1])!))
     cursor+=1
+    count+=1
 }
 
-// --- GENETIC ALGORITHM ---
-func genChromosome() -> [Cell]{
-    var tempDev = devs.shuffled()
-    var tempPM = devs.shuffled()
-    var chromosome:[Cell] = []
-    chromosome.append(contentsOf: availableCells)
+// Printing data
+print("Available cells: \(availableCellsCount)")
+for c in availableCells{
+    print(c)
+}
+print("------------------")
+
+print("Developers: \(numDevs)")
+for d in devs{
+    print(d)
+}
+print("------------------")
+
+print("Project Managers: \(numPMs)")
+for p in pms{
+    print(p)
+}
+print("------------------")
+
+
+// GENETIC ALGORITHM
+class Gene: CustomStringConvertible{
+    var cell:Cell
+    var person:Person
     
-    for i in 0..<chromosome.count{
-        if chromosome[i].type == "_"{
-            chromosome[i].person = tempDev.last!
-            tempDev.removeLast()
-        } else {
-            chromosome[i].person = tempDev.last!
-            tempDev.removeLast()
+    init(cell:Cell, person:Person) {
+        self.cell = cell
+        self.person = person
+    }
+}
+
+class Chromossome: CustomStringConvertible{
+    var genes:[Gene]
+    var fitness:Int = 0
+    
+    init() {
+        genes = []
+        
+        var selectedDevs:[Int] = []
+        for i in 0..<devCount{
+            var randD:Int = -1
+            repeat{
+                randD = Int.random(in: 0..<devs.count)
+            } while (selectedDevs.contains(randD))
+            selectedDevs.append(randD)
+            
+            genes.append(Gene(cell: availableCells[i], person: devs[randD]))
+        }
+        var selectedPMs:[Int] = []
+        for i in 0..<pmCount{
+            var randP:Int = -1
+            repeat{
+                randP = Int.random(in: 0..<pms.count)
+            } while (selectedPMs.contains(randP))
+            
+            selectedPMs.append(randP)
+            genes.append(Gene(cell: availableCells[i + devCount], person: pms[randP]))
+        }
+        calcFitness()
+    }
+    
+    func calcFitness(){
+        for g1 in genes{
+            for g2_ind in g1.cell.neighbors{
+                var wp:Int = 0
+                let g2:Gene = genes[getGeneIndex(by: g2_ind)]
+                if type(of: g1.person) == Developer.self && type(of: g2.person) == Developer.self{
+                    //Both developers
+                    let sharedSkills:Int = (g1.person as! Developer).skills.filter((g2.person as! Developer).skills.contains).count
+                    let distinctSkills = (g1.person as! Developer).skills.count + (g2.person as! Developer).skills.count - 2 * sharedSkills
+                    wp = sharedSkills * distinctSkills
+                }
+                let bp:Int = (g1.person.company == g2.person.company) ? g1.person.bonus * g2.person.bonus : 0
+                let tp = wp + bp
+                fitness += tp
+            }
         }
     }
-    return chromosome
-}
-
-func scoreChromossome(_ chrom:[Cell]) -> Int{
-    var score:Int = 0
-    for g in chrom{
-        for n in g.neighbors{
-            var tp:Int = 0
-            var wp:Int = 0
-            if g.type == "_" && n.type == "_" {
-                let commonSkills = (g.person as! Developer).skills.filter{ (n.person as! Developer).skills.contains($0) }
-                wp += commonSkills.count
-                let distinctSkills = (g.person as! Developer).skills.count + (n.person as! Developer).skills.count - 2 * commonSkills.count
-                wp *= distinctSkills
-            }
-            var bp:Int = 0
-            if g.person!.company == n.person!.company {
-                bp = g.person!.bonus * n.person!.bonus
-            }
-            tp = wp + bp
-            score += tp
-        }
-    }
-    return score
-}
-
-let POP_SIZE:Int = 50
-let GEN:Int = 10
-let MUT:Double = 0.001
-let GREADYCOUNT:Int = 10
-
-
-func genPopulation(size:Int) -> [(c:[Cell], s:Int)]{
-    var pop:[(c:[Cell], s:Int)] = []
     
-    for i in 0..<size{
-        let c = genChromosome()
-        let s = scoreChromossome(c)
-        pop.append( (c:c, s:s) )
+    func getGeneIndex(by cellId:Int) -> Int{
+        var ind = -1
+        for i in 0..<genes.count{
+            if genes[i].cell.id == cellId{
+                return i
+            }
+        }
+        return ind
+    }
+}
+
+func crossover(c1:Chromossome, c2:Chromossome) -> (cn1:Chromossome, cn2:Chromossome){
+    let cn1:Chromossome = Chromossome()
+    let cn2:Chromossome = Chromossome()
+    
+    for i in 0..<devCount{
+        cn1.genes[i] = c1.genes[i]
+        cn2.genes[i] = c2.genes[i]
+    }
+    for i in devCount..<availableCellsCount{
+        cn1.genes[i] = c2.genes[i]
+        cn2.genes[i] = c1.genes[i]
+    }
+    cn1.calcFitness()
+    cn2.calcFitness()
+    return (cn1:cn1, cn2:cn2)
+}
+
+func mutate(c:Chromossome) -> Chromossome{
+    let n:Chromossome = Chromossome()
+    var devIds:[Int] = []
+    var pmIds:[Int] = []
+    
+    for i in 0..<devCount{
+        devIds.append(n.genes[i].person.id)
+    }
+    for i in devCount..<n.genes.count{
+        pmIds.append(n.genes[i].person.id)
+    }
+    let pos:Int = Int.random(in: 0..<n.genes.count)
+    
+    if pos < devCount{
+        //mutate a developer
+        var id = -1
+        repeat{
+            id = Int.random(in: 0..<devs.count)
+        } while (devIds.contains(id))
+        n.genes[pos].person = devs[id]
+    } else {
+        //mutate a pm
+        var id = -1
+        repeat{
+            id = Int.random(in: 0..<pms.count)
+        } while (pmIds.contains(id))
+        n.genes[pos].person = pms[id]
+    }
+
+    n.calcFitness()
+    return n
+}
+
+let POP_SIZE = 500
+let NUM_GEN = 50
+let MUT_PROB:Double = 0.1
+let ELI_NUM = 100
+
+func genPopulation(size:Int) -> [Chromossome]{
+    var pop:[Chromossome] = []
+    for _ in 0..<size{
+        pop.append(Chromossome())
     }
     return pop
 }
 
-func checkChrom(_ ch:[Cell]) -> Bool{
-    var isValid = true
-    for i in 0..<ch.count{
-        for j in i..<ch.count{
-            if ch[i].x == ch[j].x && ch[i].y == ch[j].y{
-                isValid = false
-                return isValid
-            }
+var pop:[Chromossome] = genPopulation(size: POP_SIZE)
+for i in 0..<NUM_GEN{
+//    pop = genPopulation(size: POP_SIZE)
+    // Init population
+    if i != 0 {
+        var elitism:[Chromossome] = []
+        for j in 0..<ELI_NUM{
+            elitism.append(pop[j])
         }
+        let tempPop = genPopulation(size: POP_SIZE - ELI_NUM)
+        pop = []
+        pop.append(contentsOf: elitism)
+        pop.append(contentsOf: tempPop)
     }
-    return isValid
-}
+    
+    // Crossover
+    for j in stride(from: 0, through: POP_SIZE-2, by: 2){
+        let temp = crossover(c1: pop[j], c2: pop[j + 1])
+        var chromossomes:[Chromossome] = [pop[j], pop[j + 1], temp.cn1, temp.cn2]
+        chromossomes = chromossomes.sorted(by: { $0.fitness > $1.fitness })
+        pop[j] = chromossomes[0]
+        pop[j+1] = chromossomes[1]
+    }
 
-func crossover(c1:[Cell], c2:[Cell]) -> (n1:(c:[Cell], s:Int), n2:(c:[Cell], s:Int)){
-    var content:(n1:(c:[Cell], s:Int), n2:(c:[Cell], s:Int)) = (n1:(c:c1, s:scoreChromossome(c1)), n2:(c:c2, s:scoreChromossome(c2)))
-    
-    var p:Int = Int.random(in: 0..<c1.count)
-    var cp1:[Cell] = []
-    var cp2:[Cell] = []
-    
-    for i in 0..<p{
-        cp1.append(c1[i])
-        cp2.append(c2[i])
-    }
-    for i in p..<c1.count{
-        cp2.append(c1[i])
-        cp1.append(c2[i])
-    }
-    
-    if checkChrom(cp1){
-        content.n1 = (c:cp1, s:scoreChromossome(cp1))
-    }
-    if checkChrom(cp2){
-        content.n2 = (c:cp2, s:scoreChromossome(cp2))
-    }
-    
-    return content
-}
-
-
-func mutate(ch:[Cell]) -> (c:[Cell], s:Int){
-    var n:(c:[Cell], s:Int) = (c:ch, s:scoreChromossome(ch))
-    var dP:Int = Int.random(in: 0..<devCount)
-    
-    var nC = devs[dP]
-    var rC = nC
-    repeat{
-        rC = devs[ Int.random(in: 0..<devs.count) ]
-    } while (nC.company != rC.company && nC.bonus != rC.bonus && nC.skills != rC.skills)
-    
-    var ch2:[Cell] = []
-    ch2.append(contentsOf: ch)
-    ch2[dP].person = rC
-    
-    n.c = ch2
-    n.s = scoreChromossome(n.c)
-    
-    return n
-}
-
-
-func getBest(pop:[(c:[Cell], s:Int)]) -> (c:[Cell], s:Int){
-    var newPop = pop.sorted(by: { $0.s > $1.s })
-    return newPop[0]
-}
-
-var pop:[(c:[Cell], s:Int)] = []
-for i in 0..<GEN{
-    //generate population
-    if i==0 {
-        pop = genPopulation(size: POP_SIZE)
-    } else {
-        // GREADY
-        var firsts:[(c:[Cell], s:Int)] = []
-        for i in 0..<GREADYCOUNT{
-            firsts.append(pop[i])
-        }
-        pop = genPopulation(size: POP_SIZE)
-        for i in 0..<firsts.count{
-            pop[i] = firsts[i]
-        }
-//        pop = genPopulation(size: POP_SIZE)
-    }
-    
-    //crossover
-    var newPop:[(c:[Cell], s:Int)] = []
-    for i in 0..<POP_SIZE/2{
-        var chroms:(n1:(c:[Cell], s:Int), n2:(c:[Cell], s:Int)) = crossover(c1: pop[i].c, c2: pop[i + POP_SIZE/2].c)
-        newPop.append(chroms.n1)
-        newPop.append(chroms.n2)
-    }
-    
-    //mutation
-    for i in 0..<POP_SIZE{
-        if Double.random(in: 0...1)>MUT {
-            newPop[i] = mutate(ch: newPop[i].c)
-        }
-    }
-    
-    pop = newPop.sorted(by: { $0.s > $1.s })
-    
-    
-    print (getBest(pop: pop).s)
-}
-
-let sw = StreamWriter(path: (NSString(string:"~/Desktop/\(files[activeFile]).txt").expandingTildeInPath ))
-for d in devs{
-    var ind0:Int = -1
-    var ind = -1
+    //Mutation
     for i in 0..<pop.count{
-        
-        for j in 0..<pop[i].c.count{
-            if d.company == pop[i].c[j].person!.company && d.bonus == pop[i].c[j].person!.bonus{
-                ind = j
-                ind0 = i
-            }
+        let prob:Double = Double.random(in: 0..<1)
+        if prob < MUT_PROB{
+            pop[i] = mutate(c: pop[i])
         }
     }
-    if ind != -1 {
-        sw?.writeLine(data: "\(pop[ind0].c[ind].x) \(pop[ind0].c[ind].y)")
-    } else {
+    
+    pop = pop.sorted(by: { $0.fitness > $1.fitness })
+    print("BEST FITNESS: \(pop[0].fitness)")
+}
+
+func getDevPos(in chromossome:Chromossome, id:Int) -> (x:Int, y:Int){
+    var pos:(x:Int, y:Int) = (x:-1, y:-1)
+    for c in chromossome.genes{
+        if type(of: c.person) == Developer.self && c.person.id == id {
+            pos = c.cell.pos
+        }
+    }
+    return pos
+}
+
+func getPMPos(in chromossome:Chromossome, id:Int) -> (x:Int, y:Int){
+    var pos:(x:Int, y:Int) = (x:-1, y:-1)
+    for c in chromossome.genes{
+        if type(of: c.person) == PM.self && c.person.id == id {
+            pos = c.cell.pos
+        }
+    }
+    return pos
+}
+
+for g in pop[0].genes{
+    print("\(g.cell.pos) \(g.person)")
+}
+
+// SAVING FILE
+let sw = StreamWriter(path: (NSString(string:"~/Desktop/\(files[activeFile])_output.txt").expandingTildeInPath ))
+for d in devs{
+    let p = getDevPos(in: pop[0], id: d.id)
+    if p.x == -1 {
         sw?.writeLine(data: "X")
+    } else {
+        sw?.writeLine(data: "\(p.x) \(p.y)")
     }
 }
 for d in pms{
-    var ind0:Int = -1
-    var ind = -1
-    for i in 0..<pop.count{
-        var ind = -1
-        for j in 0..<pop[i].c.count{
-            if d.company == pop[i].c[j].person!.company && d.bonus == pop[i].c[j].person!.bonus{
-                ind = j
-            }
-        }
-        
-    }
-    if ind != -1 {
-        sw?.writeLine(data: "\(pop[ind0].c[ind].x) \(pop[ind0].c[ind].y)")
-    } else {
+    let p = getPMPos(in: pop[0], id: d.id)
+    if p.x == -1 {
         sw?.writeLine(data: "X")
+    } else {
+        sw?.writeLine(data: "\(p.x) \(p.y)")
     }
 }
 
